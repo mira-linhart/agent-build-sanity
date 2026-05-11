@@ -18,6 +18,6 @@ enabled = true
 
 [vars]
 SERVER_NAME = "agent-build-sanity"
-SERVER_VERSION = "0.2.1"
+SERVER_VERSION = "0.2.2"
 BUNDLE_NAME = "Agent Build Sanity"
 LANDING_URL = "https://miralinhart.com/dev"

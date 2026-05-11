@@ -170,21 +170,37 @@ const LANDING_HTML = (env: Env) => `<!doctype html>
 </html>
 `;
 
+// CORS for public read-only API. Allows browser-side liveness checks
+// from miralinhart.com and any other origin without preflight surprises.
+const CORS_HEADERS = {
+  "access-control-allow-origin": "*",
+  "access-control-allow-methods": "GET, POST, HEAD, OPTIONS",
+  "access-control-allow-headers": "content-type",
+  "access-control-max-age": "86400",
+} as const;
+
+function withCors(init: ResponseInit): ResponseInit {
+  return { ...init, headers: { ...(init.headers ?? {}), ...CORS_HEADERS } };
+}
+
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
-    if (request.method === "GET") {
+    if (request.method === "OPTIONS") {
+      return new Response(null, withCors({ status: 204 }));
+    }
+    if (request.method === "GET" || request.method === "HEAD") {
       const accept = request.headers.get("accept") ?? "";
       if (accept.includes("text/html")) {
-        return new Response(LANDING_HTML(env), {
+        return new Response(request.method === "HEAD" ? null : LANDING_HTML(env), withCors({
           headers: { "content-type": "text/html; charset=utf-8" },
-        });
+        }));
       }
-      return new Response(LANDING_TEXT(env), {
+      return new Response(request.method === "HEAD" ? null : LANDING_TEXT(env), withCors({
         headers: { "content-type": "text/plain; charset=utf-8" },
-      });
+      }));
     }
     if (request.method !== "POST") {
-      return new Response("method not allowed", { status: 405 });
+      return new Response("method not allowed", withCors({ status: 405 }));
     }
     let body: JsonRpcRequest;
     try {
@@ -196,15 +212,15 @@ export default {
           id: null,
           error: { code: -32700, message: "parse error" },
         }),
-        { status: 400, headers: { "content-type": "application/json" } },
+        withCors({ status: 400, headers: { "content-type": "application/json" } }),
       );
     }
     const result = await handleJsonRpc(body, env);
     if (result === null) {
-      return new Response("", { status: 202 });
+      return new Response("", withCors({ status: 202 }));
     }
-    return new Response(JSON.stringify(result), {
+    return new Response(JSON.stringify(result), withCors({
       headers: { "content-type": "application/json" },
-    });
+    }));
   },
 };
