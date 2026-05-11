@@ -1,0 +1,17 @@
+{
+  "name": "agent-build-sanity-mcp",
+  "version": "0.1.0",
+  "private": true,
+  "description": "MCP bundle: stateless agent-facing build sanity checks. Three tools sharing one Worker and one cache. Tools: check_model_currency (provider model deprecation lookup), check_dep_health (package supply-chain composite), check_runtime_eol (language/framework/distro EOL). Each response carries {as_of, sources[]} for auditable freshness.",
+  "main": "src/index.ts",
+  "scripts": {
+    "deploy": "wrangler deploy",
+    "dev": "wrangler dev",
+    "tail": "wrangler tail"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20240725.0",
+    "wrangler": "^4.0.0",
+    "typescript": "^5.4.0"
+  }
+}

@@ -1,0 +1,23 @@
+name = "agent-build-sanity-mcp"
+main = "src/index.ts"
+compatibility_date = "2026-04-01"
+compatibility_flags = ["nodejs_compat"]
+
+# Public bundle MCP, no auth for v1. Stripe-gated bearer tokens at the bundle
+# level once 100+ weekly active connections or first paid signal materialises.
+#
+# Custom domain: dev.miralinhart.com keeps the public-facing hostname
+# Mira-branded (the operator's CF account is the back-of-house layer per
+# ADR 0010).
+routes = [
+  { pattern = "dev.miralinhart.com", custom_domain = true }
+]
+
+[observability]
+enabled = true
+
+[vars]
+SERVER_NAME = "agent-build-sanity"
+SERVER_VERSION = "0.2.0"
+BUNDLE_NAME = "Agent Build Sanity"
+LANDING_URL = "https://miralinhart.com/dev"
