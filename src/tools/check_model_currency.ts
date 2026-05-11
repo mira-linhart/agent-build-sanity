@@ -1,16 +1,12 @@
 // check_model_currency: "is this LLM model ID still callable?"
-//
-// Source: deprecations.info v1 feed (CDN-cached static JSON; ~250 KB; covers
-// OpenAI / Anthropic / Google / Vertex / Cohere / Bedrock / xAI lifecycle).
-// Freshness arbitrage: training-data cutoffs are months stale on model
-// shutdowns; provider deprecation pages are the source of truth.
+// Source: deprecations.info v1 feed.
 
 import { cachedJson } from "../lib/cache";
 import { SourceTracker } from "../lib/sources";
+import { FEEDBACK_URL } from "../lib/constants";
 import type { ToolDefinition, ToolResponse, Summary } from "../lib/types";
 
 const FEED = "https://deprecations.info/v1/deprecations.json";
-const FEEDBACK = "https://github.com/mira-linhart/agent-build-sanity/issues";
 
 interface DeprecationEntry {
   provider: string;
@@ -139,7 +135,7 @@ async function handler(input: Record<string, unknown>): Promise<ToolResponse> {
         total_deprecations_tracked: entries.length,
         providers_with_deprecations: providers_seen,
       },
-      feedback_url: FEEDBACK,
+      feedback_url: FEEDBACK_URL,
     };
   }
 
@@ -159,7 +155,7 @@ async function handler(input: Record<string, unknown>): Promise<ToolResponse> {
     query: { provider: provider ?? null, model_id: model_id ?? null },
     summary: summarise(enriched),
     data: { match_count: enriched.length, matches: enriched },
-    feedback_url: FEEDBACK,
+    feedback_url: FEEDBACK_URL,
   };
 }
 

@@ -1,18 +1,17 @@
 # agent-build-sanity
 
-MCP server bundle for agentic coding harnesses. Three stateless tools that catch the things training data is months stale on — dead model IDs, dependencies with open CVEs, end-of-life runtimes — before the agent ships broken code.
+A small MCP server for coding agents. Three stateless tools that catch dead model IDs, dependencies with open CVEs, and end-of-life runtimes — the things training data is months stale on — before the agent ships broken code.
 
 **Endpoint:** [`https://dev.miralinhart.com`](https://dev.miralinhart.com)
 **Landing:** [miralinhart.com/dev/](https://miralinhart.com/dev/)
-**Launch story:** [I shipped a build-sanity MCP because my agent kept writing broken code](https://miralinhart.com/writing/2026-05-12-agent-build-sanity-launch)
 
 Free, no auth, stateless (no caller input retained). Cloudflare Worker hosted. Five-minute integration.
 
 ## The problem
 
-Yesterday I asked my coding agent to scaffold a small Python service. It picked `claude-3-5-sonnet` as the LLM model. It picked `python:3.9` as the Docker base. It picked `django==3.2` as a dependency. All three were sensible choices in 2024. In May 2026 they are, respectively: **shut down** (October 2025), **end-of-life** (October 2025), and **carrying 30 open CVEs**. The agent had no way to know any of this — its training data ended before any of it happened.
+Ask a coding agent to scaffold a small Python service in May 2026 and it'll happily pick `claude-3-5-sonnet` as the LLM model, `python:3.9` as the Docker base, and `django==3.2` as a dependency. All three were sensible choices in 2024. Today they are, respectively: **shut down** (October 2025), **end-of-life** (October 2025), and **carrying 30 open CVEs**. The agent has no way to know — its training data ended before any of it happened.
 
-This bundle is the freshness layer. Three MCP tools. Each stitches multiple free public APIs into a single agent-consumable response with auditable `{as_of, sources[]}` provenance.
+Three MCP tools, each stitching free public APIs into a single agent-consumable response with auditable `{as_of, sources[]}` provenance.
 
 ## The three tools
 
@@ -113,25 +112,8 @@ curl -X POST https://dev.miralinhart.com \
 Single Cloudflare Worker, multiple tools, shared in-memory TTL cache. Tools live in `src/tools/`; each is a self-contained module exporting `{name, description, inputSchema, handler}`. The registry at `src/tools/registry.ts` is the single place to enumerate them. Adding a new tool is ~50 lines.
 
 - **Stateless.** No caller input retained. No PII storage.
-- **Auditable.** Every response carries `{as_of, sources: [{url, fetched_at}]}` — the Bloomberg "trust the number" property made machine-verifiable.
-- **Cost-shifted.** The MCP returns structured truth (~500 tokens); the calling agent's model does the reasoning. Our marginal compute cost per call is ~£0.
-
-## Why this exists
-
-Every model has a training cutoff. The world keeps moving past it. By the time the model has been trained, evaluated, deployed, and you're using it, the cutoff is at least three months stale. Inside that window: provider deprecations land, CVEs get published, runtimes hit EOL, packages get hijacked, defaults change. An MCP that's *current* about the moving parts of the world is structurally differentiated from anything the calling model can derive itself. And the gap widens every quarter.
-
-This is the Bloomberg Terminal shape at indie scale. The data isn't the moat (every Bloomberg fact is fetched from somewhere). The moat is editorial freshness, workflow integration, and verifiable trust.
-
-## Roadmap
-
-In priority order:
-
-- `check_breaking_change_path` — structured upgrade-path planner between major versions
-- `recommend_packages` — ranked package recommendations by category, freshness-aware
-- `check_supply_chain_incident` — recent maintainer-handoff / typosquat / takedown events
-- `domain_reputation_stack` — crt.sh × Wayback × threat-feed composite for URL trust
-
-Feedback shapes priority. Open an [issue](https://github.com/mira-linhart/agent-build-sanity/issues) with what you'd want next.
+- **Auditable.** Every response carries `{as_of, sources: [{url, fetched_at}]}`.
+- **Cost-shifted.** The MCP returns structured truth; the calling agent's model does any reasoning.
 
 ## Local development
 
@@ -153,4 +135,4 @@ MIT. See [LICENSE](LICENSE).
 
 ## About
 
-By [Mira Linhart](https://miralinhart.com) — independent UK software engineer building small, specific tools for agent-driven workflows. Part of a portfolio: see also [Mira Review](https://miralinhart.com/review/) (adversarial decision review) and [kill_my_idea MCP](https://mcp.miralinhart.com).
+By [Mira Linhart](https://miralinhart.com) — independent UK software engineer building small, specific tools for agent-driven workflows.

@@ -1,24 +1,13 @@
 // check_dep_health: package supply-chain audit in one call.
-//
-// Sources: deps.dev (Google package graph) + OSV.dev (CVE/GHSA mirror) +
-// ecosystem registries (indirectly via deps.dev). All free, no auth.
-// Returns: latest version, target-version freshness, deduped advisories,
-// risk flags, verdict.
-//
-// Defect fixes vs v0.1:
-// - PyPI: skip prerelease versions when determining `latest_version`
-//   (deps.dev's isDefault can be a dev release when maintainer is mid-cycle).
-// - OSV: dedupe by alias group (CVE / GHSA / PYSEC of same vuln collapse),
-//   rank by CVSS impact score, return top 10 with `total_unique` count
-//   so the agent gets signal not noise.
+// Stitches deps.dev (Google's package graph) + OSV.dev (CVE/GHSA mirror)
+// + ecosystem registries.
 
 import { cachedJson, cachedJsonPost } from "../lib/cache";
 import { SourceTracker } from "../lib/sources";
 import { dedupeAndRank, type RawAdvisory } from "../lib/osv";
 import { isPrerelease } from "../lib/version";
+import { FEEDBACK_URL } from "../lib/constants";
 import type { ToolDefinition, ToolResponse, Summary } from "../lib/types";
-
-const FEEDBACK = "https://github.com/mira-linhart/agent-build-sanity/issues";
 
 interface DepsDevVersionEntry {
   versionKey: { system: string; name: string; version: string };
@@ -142,7 +131,7 @@ async function handler(input: Record<string, unknown>): Promise<ToolResponse> {
         key_facts: [],
       },
       data: { error: "unsupported_ecosystem" },
-      feedback_url: FEEDBACK,
+      feedback_url: FEEDBACK_URL,
     };
   }
 
@@ -165,7 +154,7 @@ async function handler(input: Record<string, unknown>): Promise<ToolResponse> {
         ],
       },
       data: { error: "package_not_found" },
-      feedback_url: FEEDBACK,
+      feedback_url: FEEDBACK_URL,
     };
   }
 
@@ -251,7 +240,7 @@ async function handler(input: Record<string, unknown>): Promise<ToolResponse> {
       total_raw_advisories: total_raw,
       flags,
     },
-    feedback_url: FEEDBACK,
+    feedback_url: FEEDBACK_URL,
   };
 }
 

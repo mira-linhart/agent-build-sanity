@@ -1,17 +1,10 @@
 // check_runtime_eol: end-of-life status for runtime / framework / OS / db.
-//
-// Source: endoflife.date (455+ tracked products, free JSON API).
-//
-// Defect fix vs v0.1: when all cycles are EOL (e.g. centos, python:2 alone),
-// return `fully_retired: true` and surface known successor products from a
-// small curated map, instead of returning a null recommended_target with no
-// actionable signal.
+// Source: endoflife.date (free JSON API).
 
 import { cachedJson } from "../lib/cache";
 import { SourceTracker } from "../lib/sources";
+import { FEEDBACK_URL } from "../lib/constants";
 import type { ToolDefinition, ToolResponse, Summary } from "../lib/types";
-
-const FEEDBACK = "https://github.com/mira-linhart/agent-build-sanity/issues";
 
 // Curated successor map for products with no active cycles. Each entry says
 // "if you were using X, here's where to go next." Editorial — extend as the
@@ -174,7 +167,7 @@ async function handler(input: Record<string, unknown>): Promise<ToolResponse> {
         key_facts: [{ label: "Error", value: String(e).slice(0, 120) }],
       },
       data: { error: "product_not_found" },
-      feedback_url: FEEDBACK,
+      feedback_url: FEEDBACK_URL,
     };
   }
 
@@ -204,7 +197,7 @@ async function handler(input: Record<string, unknown>): Promise<ToolResponse> {
           ],
         },
         data: { error: "version_not_matched", available_cycles: enriched.map((c) => c.cycle) },
-        feedback_url: FEEDBACK,
+        feedback_url: FEEDBACK_URL,
       };
     }
     return {
@@ -213,7 +206,7 @@ async function handler(input: Record<string, unknown>): Promise<ToolResponse> {
       query: { product, version },
       summary: summariseCycle(product, version, matched),
       data: matched,
-      feedback_url: FEEDBACK,
+      feedback_url: FEEDBACK_URL,
     };
   }
 
@@ -233,7 +226,7 @@ async function handler(input: Record<string, unknown>): Promise<ToolResponse> {
       fully_retired,
       successor_products: successors,
     },
-    feedback_url: FEEDBACK,
+    feedback_url: FEEDBACK_URL,
   };
 }
 
